@@ -899,8 +899,8 @@ export default function ShoreditchDashboard() {
               </Card>
             </div>
             <Card>
-              <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>Profit & Loss — Feb 2026 Actuals</div>
-              <div style={{ fontSize: 10, color: "var(--text-dim)", marginBottom: 12 }}>From 6th March KPI report</div>
+              <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>Profit & Loss — Mar 2026 Actuals</div>
+              <div style={{ fontSize: 10, color: "var(--text-dim)", marginBottom: 12 }}>From 10 April KPI report</div>
               {db.pnl && db.pnl.length > 0 && (() => {
                 const latest = db.pnl[db.pnl.length - 1];
                 const prev = db.pnl.length > 1 ? db.pnl[db.pnl.length - 2] : null;
