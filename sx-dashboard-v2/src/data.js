@@ -1,5 +1,5 @@
 // Shoreditch Exchange — Data File (v26 — 14 Apr 2026)
-export export const SEED_DATA = {
+export const SEED_DATA = {
   meta: {
     building: "Shoreditch Exchange",
     totalNIA: 110000,
