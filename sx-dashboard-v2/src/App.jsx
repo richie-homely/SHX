@@ -331,37 +331,43 @@ function SoldNotOccupied({ deals }) {
     if (d.status !== "signed" && d.status !== "approved") return false;
     const start = new Date(d.startDate);
     if (start <= now) {
-      // Started but might be in rent-free
       if (d.rentFree && d.rentFree !== "None") return true;
       return false;
     }
-    return true; // Future start date
+    return true;
   }).map(d => {
     const start = new Date(d.startDate);
     const daysToStart = daysBetween(now, d.startDate);
     let reason = "";
-    if (start > now) {
-      reason = `Starts ${d.startDate.slice(0, 7)}`;
-    } else if (d.rentFree && d.rentFree !== "None") {
-      reason = `Rent-free: ${d.rentFree}`;
-    }
-    return { ...d, daysToStart, reason };
+    if (start > now) reason = `Starts ${d.startDate.slice(0, 7)}`;
+    else if (d.rentFree && d.rentFree !== "None") reason = `Rent-free: ${d.rentFree}`;
+    const incr = d.incrementalMRR != null ? d.incrementalMRR : (d.newMRR || 0) - (d.oldMRR || 0);
+    // Estimate incremental desks: New = all desks, Growth = desks proportional to MRR uplift, Renewal = 0
+    let incrDesks = d.desks;
+    if (d.type === "Renewal") incrDesks = 0;
+    else if (d.type === "Growth" && d.oldMRR > 0 && d.newDeskRate > 0) incrDesks = Math.max(0, Math.round(incr / d.newDeskRate));
+    return { ...d, daysToStart, reason, incr, incrDesks };
   }).sort((a, b) => a.daysToStart - b.daysToStart);
 
-  const totalDesks = pending.reduce((s, d) => s + (d.desks || 0), 0);
+  const totalIncrDesks = pending.reduce((s, d) => s + d.incrDesks, 0);
   const totalMRR = pending.reduce((s, d) => s + (d.newMRR || 0), 0);
-  const totalIncremental = pending.reduce((s, d) => s + (d.incrementalMRR != null ? d.incrementalMRR : (d.newMRR || 0) - (d.oldMRR || 0)), 0);
+  const totalIncremental = pending.reduce((s, d) => s + d.incr, 0);
+  const newCount = pending.filter(d => d.type === "New").length;
+  const growthCount = pending.filter(d => d.type === "Growth" || d.type === "Renewal").length;
+
+  const typeColor = t => t === "New" ? "#1D9E75" : t === "Growth" ? "#3B82F6" : "#8B5CF6";
+  const typeBg = t => t === "New" ? "#1D9E7515" : t === "Growth" ? "#3B82F615" : "#8B5CF615";
 
   return (
     <div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 10, marginBottom: 16 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr", gap: 10, marginBottom: 16 }}>
         <div style={{ background: "#8B5CF622", border: "1px solid #8B5CF644", borderRadius: 8, padding: 12, textAlign: "center" }}>
           <div style={{ fontSize: 22, fontWeight: 700, color: "#8B5CF6" }}>{pending.length}</div>
           <div style={{ fontSize: 10, color: "var(--text-dim)" }}>Deals pending</div>
         </div>
-        <div style={{ background: "#8B5CF622", border: "1px solid #8B5CF644", borderRadius: 8, padding: 12, textAlign: "center" }}>
-          <div style={{ fontSize: 22, fontWeight: 700, color: "#8B5CF6" }}>{totalDesks}</div>
-          <div style={{ fontSize: 10, color: "var(--text-dim)" }}>Desks sold, not occupied</div>
+        <div style={{ background: "#1D9E7522", border: "1px solid #1D9E7544", borderRadius: 8, padding: 12, textAlign: "center" }}>
+          <div style={{ fontSize: 22, fontWeight: 700, color: "#1D9E75" }}>{totalIncrDesks}</div>
+          <div style={{ fontSize: 10, color: "var(--text-dim)" }}>Net new desks</div>
         </div>
         <div style={{ background: "#8B5CF622", border: "1px solid #8B5CF644", borderRadius: 8, padding: 12, textAlign: "center" }}>
           <div style={{ fontSize: 22, fontWeight: 700, color: "#8B5CF6" }}>{fmt(totalMRR)}</div>
@@ -371,22 +377,28 @@ function SoldNotOccupied({ deals }) {
           <div style={{ fontSize: 22, fontWeight: 700, color: "#1D9E75" }}>{fmt(totalIncremental)}</div>
           <div style={{ fontSize: 10, color: "var(--text-dim)" }}>Incremental MRR</div>
         </div>
+        <div style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 8, padding: 12, textAlign: "center" }}>
+          <div style={{ fontSize: 14, fontWeight: 700 }}><span style={{ color: "#1D9E75" }}>{newCount}</span> <span style={{ color: "var(--text-dim)", fontWeight: 400 }}>new</span> <span style={{ color: "#3B82F6" }}>{growthCount}</span> <span style={{ color: "var(--text-dim)", fontWeight: 400 }}>uplift</span></div>
+          <div style={{ fontSize: 10, color: "var(--text-dim)", marginTop: 4 }}>Deal mix</div>
+        </div>
       </div>
-      {pending.map((d, i) => {
-        const incr = d.incrementalMRR != null ? d.incrementalMRR : (d.newMRR || 0) - (d.oldMRR || 0);
-        return (
-        <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 50px 70px 60px 70px 1fr", gap: 6, padding: "8px 0", borderBottom: "1px solid var(--border)", alignItems: "center", fontSize: 12 }}>
+      {pending.map((d, i) => (
+        <div key={i} style={{ display: "grid", gridTemplateColumns: "50px 1fr 65px 70px 60px 70px 1fr", gap: 6, padding: "8px 0", borderBottom: "1px solid var(--border)", alignItems: "center", fontSize: 12, background: typeBg(d.type) }}>
+          <span style={{ fontSize: 9, padding: "2px 6px", borderRadius: 3, fontWeight: 600, background: typeColor(d.type) + "22", color: typeColor(d.type), textAlign: "center" }}>{d.type}</span>
           <span style={{ fontWeight: 500 }}>{d.tenant}</span>
-          <span style={{ textAlign: "right", color: "var(--text-dim)" }}>{d.desks}d</span>
+          <span style={{ textAlign: "right", color: "var(--text-dim)" }}>
+            {d.type === "New" ? <span style={{ color: "#1D9E75", fontWeight: 600 }}>+{d.desks}d</span>
+              : d.type === "Growth" ? <span>{d.desks}d <span style={{ color: "#3B82F6", fontWeight: 600 }}>(+{d.incrDesks})</span></span>
+              : <span>{d.desks}d <span style={{ color: "#8B5CF6" }}>(rate)</span></span>}
+          </span>
           <span style={{ textAlign: "right", fontWeight: 600 }}>{fmt(d.newMRR)}</span>
-          <span style={{ textAlign: "right", fontWeight: 600, color: "#1D9E75" }}>+{fmt(incr)}</span>
+          <span style={{ textAlign: "right", fontWeight: 600, color: "#1D9E75" }}>+{fmt(d.incr)}</span>
           <span style={{ textAlign: "right" }}>
             <span style={{ fontSize: 9, padding: "2px 6px", borderRadius: 3, fontWeight: 600, background: statusColor(d.status) + "22", color: statusColor(d.status) }}>{d.status}</span>
           </span>
           <span style={{ color: "#8B5CF6", fontSize: 11, textAlign: "right" }}>{d.reason}</span>
         </div>
-        );
-      })}
+      ))}
       {pending.length === 0 && <div style={{ color: "var(--text-dim)", fontSize: 12 }}>All signed deals are currently occupied and paying</div>}
     </div>
   );
@@ -1207,10 +1219,7 @@ export default function ShoreditchDashboard() {
           </div>
         )}
 
-        {/* ── FORECAST ─────────────────────────────────────────── */}
-        {tab === "forecast" && (
-          <Forecast db={db} />
-        )}
+        {tab === "forecast" && <Forecast db={db} />}
 
         {/* Floor Plan Modal */}
         {selectedFloor && <FloorPlanModal floor={selectedFloor} onClose={() => setSelectedFloor(null)} offices={db.offices} />}
