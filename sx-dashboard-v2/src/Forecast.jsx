@@ -101,7 +101,7 @@ export default function Forecast({ db }) {
   const [newDealRate, setNewDealRate] = useState(450);
   const [showOpex, setShowOpex] = useState(false);
   const [rateOverrides, setRateOverrides] = useState({});
-  const [churnRate, setChurnRate] = useState(3);
+  const [churnRate, setChurnRate] = useState(0.25);
   const [capex, setCapex] = useState(DEFAULT_CAPEX);
 
   const offices = useMemo(() => db.offices.filter(o => o.status === "occupied" && o.mrr > 0).map(o => ({
@@ -471,14 +471,14 @@ export default function Forecast({ db }) {
 
           <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:20,padding:14,background:"var(--bg)",borderRadius:6}}>
             <div style={{fontSize:10,color:"var(--text-dim)",textTransform:"uppercase"}}>Monthly churn rate</div>
-            {[1,2,3,5,7].map(p => (
+            {[0.1,0.25,0.5,0.75,1,2,3,5].map(p => (
               <button key={p} onClick={() => setChurnRate(p)} style={{
                 padding:"5px 12px",fontSize:11,fontWeight:churnRate===p?700:400,borderRadius:4,cursor:"pointer",
                 background:churnRate===p?"#E74C3C":"transparent",color:churnRate===p?"#fff":"var(--text-dim)",
                 border:`1px solid ${churnRate===p?"#E74C3C":"var(--border)"}`,
               }}>{p}%</button>
             ))}
-            <span style={{fontSize:11,color:"var(--text-dim)"}}>= {churnRate*12}% annual</span>
+            <span style={{fontSize:11,color:"var(--text-dim)"}}>= {Math.round(churnRate*12*10)/10}% annual</span>
           </div>
 
           <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:16}}>
