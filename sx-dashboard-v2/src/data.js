@@ -1,8 +1,5 @@
 // Shoreditch Exchange — Data File (v26 — 14 Apr 2026)
-// Split from main dashboard for manageability
-
-// ─── Seed Data ───────────────────────────────────────────────────────────
-export const SEED_DATA = {
+export export const SEED_DATA = {
   meta: {
     building: "Shoreditch Exchange",
     totalNIA: 110000,
@@ -225,7 +222,6 @@ export const SEED_DATA = {
     { tenant: "PlumGuide", type: "Growth", desks: 33, office: "02-112", oldMRR: 5500, newDeskRate: 182, newMRR: 6000, term: "12 months", rentFree: "None", startDate: "2026-04-15", status: "signed", broker: false },
     { tenant: "Ryecroft Glenton", type: "New", desks: 2, office: "GRW (DD)", oldMRR: null, newDeskRate: 350, newMRR: 700, term: "12 months", rentFree: "None", startDate: "2026-04-10", status: "signed", broker: false },
     { tenant: "RIG Intelligence", type: "Growth", desks: 6, office: "01-104", oldMRR: 1800, newDeskRate: 450, newMRR: 2700, incrementalMRR: 900, term: "12 months", rentFree: "1 month (Sep-Oct)", startDate: "2026-04-20", status: "signed", broker: false },
-    { tenant: "O Dobson", type: "New", desks: 15, office: null, oldMRR: null, newDeskRate: 233, newMRR: 3500, term: "3 weeks", rentFree: "None", startDate: "2026-06-01", status: "signed", broker: false },
     { tenant: "Trint", type: "New", desks: 22, office: "01-131/132", oldMRR: null, newDeskRate: 477, newMRR: 10500, term: "24 months", rentFree: "3 months", startDate: "2026-07-01", status: "signed", broker: true },
     { tenant: "Samudra Oceans", type: "Growth", desks: 10, office: "01-117", oldMRR: 2000, newDeskRate: 360, newMRR: 3600, term: "12 months", rentFree: "None", startDate: "2026-04-13", status: "signed", broker: false },
     { tenant: "Tall Tales Media", type: "New", desks: 2, office: "03-109", oldMRR: null, newDeskRate: 450, newMRR: 900, term: "6 months", rentFree: "None", startDate: "2026-05-01", status: "signed", broker: false },
